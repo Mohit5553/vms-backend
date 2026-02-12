@@ -28,7 +28,7 @@ const app = express();
 
 const allowedOrigins = [
     "http://localhost:5173",
-    "https://jts-vm.netlify.app",
+    // "https://jts-vm.netlify.app",
     "https://jts-vms.vercel.app"   // ✅ ADD THIS
 
 ];
