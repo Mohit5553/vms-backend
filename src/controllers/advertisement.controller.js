@@ -265,4 +265,39 @@ exports.stopAdvertisements = async (req, res) => {
   });
 };
 
+/**
+ * @desc    Pause Ads on Device
+ * @route   POST /api/advertisement/pause
+ */
+exports.pauseAdvertisements = async (req, res) => {
+  try {
+    const { companyId, deviceId } = req.body;
+
+    if (!deviceId) {
+      return res.status(400).json({
+        success: false,
+        message: "deviceId is required",
+      });
+    }
+
+    const io = socketInstance.getIO();
+
+    // 🔥 Send pause event to device
+    io.to(`device_${deviceId}`).emit("pause_ads", {
+      companyId,
+      deviceId,
+    });
+
+    res.json({
+      success: true,
+      message: `Ads paused for device ${deviceId}`,
+    });
+  } catch (error) {
+    console.error("Pause error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
