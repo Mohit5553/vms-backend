@@ -7,8 +7,6 @@ const {
   listAdvertisements,
   playAdvertisements,
   stopAdvertisements,
-  pauseAdvertisements,   // 👈 ADD THIS
-
 } = require("../controllers/advertisement.controller");
 const uploadVideo = require("../middleware/uploadVideo");
 
@@ -22,6 +20,5 @@ router.put("/edit/:id", updateAdvertisement);
 router.delete("/delete/:id", deleteAdvertisement);
 router.post("/play", playAdvertisements);
 router.post("/stop", stopAdvertisements);
-router.post("/pause", pauseAdvertisements);
 
 module.exports = router;
