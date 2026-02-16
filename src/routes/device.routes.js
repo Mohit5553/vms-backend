@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+
 const {
     createDevice,
     getAllDevices,
@@ -7,24 +8,51 @@ const {
     updateDevice,
     deleteDevice,
     checkDevice,
+    getDeviceByToken, // 🔥 NEW
 } = require("../controllers/device.controller");
 
-// CREATE
+
+/* =======================================================
+   ✅ CREATE DEVICE
+======================================================= */
 router.post("/create", createDevice);
 
-// CHECK BY DEVICE ID
+
+/* =======================================================
+   ✅ CHECK DEVICE BY DEVICE ID
+======================================================= */
 router.get("/check/:deviceId", checkDevice);
 
-// READ ALL
+
+/* =======================================================
+   ✅ GET DEVICE BY TOKEN (SHORT URL SUPPORT)
+   Example: /devices/by-token/abc123
+======================================================= */
+router.get("/by-token/:token", getDeviceByToken);
+
+
+/* =======================================================
+   ✅ GET ALL DEVICES
+======================================================= */
 router.get("/list", getAllDevices);
 
-// READ ONE
+
+/* =======================================================
+   ✅ GET SINGLE DEVICE BY ID
+======================================================= */
 router.get("/listbyid/:id", getDeviceById);
 
-// UPDATE
+
+/* =======================================================
+   ✅ UPDATE DEVICE
+======================================================= */
 router.put("/update/:id", updateDevice);
 
-// DELETE
+
+/* =======================================================
+   ✅ DELETE DEVICE
+======================================================= */
 router.delete("/delete/:id", deleteDevice);
+
 
 module.exports = router;

@@ -65,9 +65,22 @@ exports.getDashboardStats = async (req, res) => {
  */
 exports.getLiveScreens = async (req, res) => {
   try {
+    const screens = activeScreens.list();
+
+    // 🔥 Format data properly
+    const formattedScreens = screens.map((s) => ({
+      deviceId: s.deviceId,
+      locationId: s.locationId,
+      locationName: s.locationName || "Unknown Location",
+      companyName: s.companyName || "Unknown Company", // 🔥 IMPORTANT
+      currentVideo: s.currentVideo,
+      socketId: s.socketId,
+      connectedAt: s.connectedAt,
+    }));
+
     res.status(200).json({
       success: true,
-      data: activeScreens.list(),
+      data: formattedScreens,
     });
   } catch (error) {
     res.status(500).json({
@@ -76,3 +89,4 @@ exports.getLiveScreens = async (req, res) => {
     });
   }
 };
+

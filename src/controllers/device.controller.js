@@ -1,28 +1,38 @@
 const Device = require("../models/Device");
 
-// ✅ CREATE DEVICE
+/* 🔥 TOKEN GENERATOR */
+const generateToken = () =>
+    Math.random().toString(36).substring(2, 10);
+
+
+/* =======================================================
+   ✅ CREATE DEVICE (WITH SHORT SCREEN TOKEN)
+======================================================= */
 exports.createDevice = async (req, res) => {
     try {
         let { deviceId, deviceName, company_id, location_id, status } = req.body;
 
+        // Check if already exists
         const exists = await Device.findOne({ deviceId });
         if (exists) {
             return res.status(400).json({ message: "Device already exists" });
         }
 
-        // Ensure locations is always an array
+        // Normalize locations
         const locations = Array.isArray(location_id)
             ? location_id
             : location_id
                 ? [location_id]
                 : [];
 
+        // Create device with token
         const device = await Device.create({
             deviceId,
-            deviceName,      // ✅ included everywhere
+            deviceName,
             company_id,
             location_id: locations,
             status,
+            screenToken: generateToken(), // 🔥 NEW
         });
 
         res.status(201).json({
@@ -34,12 +44,15 @@ exports.createDevice = async (req, res) => {
     }
 };
 
-// ✅ GET ALL DEVICES
+
+/* =======================================================
+   ✅ GET ALL DEVICES
+======================================================= */
 exports.getAllDevices = async (req, res) => {
     try {
         const devices = await Device.find()
             .populate("company_id", "name")
-            .populate("location_id", "name"); // works with array too
+            .populate("location_id", "name");
 
         res.json({ data: devices });
     } catch (error) {
@@ -47,7 +60,10 @@ exports.getAllDevices = async (req, res) => {
     }
 };
 
-// ✅ GET SINGLE DEVICE
+
+/* =======================================================
+   ✅ GET SINGLE DEVICE
+======================================================= */
 exports.getDeviceById = async (req, res) => {
     try {
         const device = await Device.findById(req.params.id)
@@ -64,12 +80,37 @@ exports.getDeviceById = async (req, res) => {
     }
 };
 
-// ✅ UPDATE (EDIT) DEVICE  — FIXED FOR deviceName + multi-location
+
+/* =======================================================
+   ✅ GET DEVICE BY TOKEN (SHORT URL SUPPORT)
+======================================================= */
+exports.getDeviceByToken = async (req, res) => {
+    try {
+        const device = await Device.findOne({
+            screenToken: req.params.token,
+        })
+            .populate("company_id", "name")
+            .populate("location_id", "name");
+
+        if (!device) {
+            return res.status(404).json({ message: "Device not found" });
+        }
+
+        res.json({ data: device });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+/* =======================================================
+   ✅ UPDATE DEVICE (WITH TOKEN SAFETY)
+======================================================= */
 exports.updateDevice = async (req, res) => {
     try {
         const { deviceId, location_id } = req.body;
 
-        // Check unique deviceId if changed
+        // Ensure unique deviceId
         if (deviceId) {
             const exists = await Device.findOne({
                 deviceId,
@@ -81,7 +122,7 @@ exports.updateDevice = async (req, res) => {
             }
         }
 
-        // Normalize locations to array if sent
+        // Normalize location array
         if (location_id) {
             req.body.location_id = Array.isArray(location_id)
                 ? location_id
@@ -90,7 +131,7 @@ exports.updateDevice = async (req, res) => {
 
         const device = await Device.findByIdAndUpdate(
             req.params.id,
-            req.body,   // includes deviceName if sent
+            req.body,
             { new: true, runValidators: true }
         );
 
@@ -107,7 +148,10 @@ exports.updateDevice = async (req, res) => {
     }
 };
 
-// ✅ DELETE DEVICE (no change needed)
+
+/* =======================================================
+   ✅ DELETE DEVICE
+======================================================= */
 exports.deleteDevice = async (req, res) => {
     try {
         const device = await Device.findByIdAndDelete(req.params.id);
@@ -122,7 +166,10 @@ exports.deleteDevice = async (req, res) => {
     }
 };
 
-// ✅ CHECK DEVICE BY deviceId
+
+/* =======================================================
+   ✅ CHECK DEVICE BY DEVICE ID
+======================================================= */
 exports.checkDevice = async (req, res) => {
     try {
         const { deviceId } = req.params;

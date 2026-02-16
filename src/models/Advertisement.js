@@ -2,35 +2,35 @@ const mongoose = require("mongoose");
 
 const advertisementSchema = new mongoose.Schema(
   {
-    company_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Company",
-      required: true,
-    },
+    company_ids: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Company",
+        required: true,
+      },
+    ],
 
-    location_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Location",
-      required: true,
-    },
+    location_ids: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Location",
+        required: true,
+      },
+    ],
 
-    deviceId: {
-      type: [String],   // 👈 CHANGE HERE
-      required: true,
-    },
-
+    // 🔥 MAC based device ID
+    deviceId: [
+      {
+        type: String,
+      },
+    ],
 
     title: {
       type: String,
-      required: true,
+      trim: true,
     },
 
     description: String,
-
-    videoPath: {
-      type: String, // local file path
-      required: true,
-    },
 
     startDate: Date,
     endDate: Date,
@@ -40,12 +40,17 @@ const advertisementSchema = new mongoose.Schema(
       default: 1,
     },
 
+    videoPath: {
+      type: String,
+      required: true,
+    },
+
     isActive: {
       type: Boolean,
       default: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Advertisement", advertisementSchema);

@@ -8,7 +8,8 @@ const DeviceSchema = new mongoose.Schema(
             unique: true,
             trim: true,
         },
-        deviceName: {            // ✅ NEW FIELD
+
+        deviceName: {
             type: String,
             required: true,
             trim: true,
@@ -20,7 +21,7 @@ const DeviceSchema = new mongoose.Schema(
             required: true,
         },
 
-        // ✅ CHANGE HERE → ARRAY OF LOCATIONS
+        // ✅ MULTI LOCATION
         location_id: [
             {
                 type: mongoose.Schema.Types.ObjectId,
@@ -28,6 +29,13 @@ const DeviceSchema = new mongoose.Schema(
                 required: true,
             },
         ],
+
+        // 🔥 NEW → SHORT TOKEN FOR SCREEN URL
+        screenToken: {
+            type: String,
+            unique: true,
+            index: true,
+        },
 
         status: {
             type: String,

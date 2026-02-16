@@ -1,16 +1,25 @@
 const activeScreens = new Map();
 
 module.exports = {
-    add: (deviceId, locationId, locationName, currentVideo = null, socketId = null) => {
+    add: (
+        deviceId,
+        locationId,
+        locationName,
+        currentVideo = null,
+        socketId = null,
+        companyName = "Unknown"
+    ) => {
         activeScreens.set(deviceId, {
             deviceId,
-            locationId,              // ✅ store location too
-            locationName: locationName || "Unknown Location",
-            currentVideo: currentVideo || null,
+            locationId,
+            locationName,
+            currentVideo,
             socketId,
+            companyName, // 🔥 ADD THIS
             connectedAt: new Date(),
         });
     },
+
 
     updateVideo: (deviceId, currentVideo) => {
         if (activeScreens.has(deviceId)) {
@@ -31,12 +40,13 @@ module.exports = {
     remove: (deviceId) => activeScreens.delete(deviceId),
 
     removeBySocketId: (socketId) => {
-        for (const [deviceId, screen] of activeScreens.entries()) {
+        for (const [key, screen] of activeScreens.entries()) {
             if (screen.socketId === socketId) {
-                activeScreens.delete(deviceId);
+                activeScreens.delete(key);
             }
         }
     },
+
 
     list: () => Array.from(activeScreens.values()),
 };

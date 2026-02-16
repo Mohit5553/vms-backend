@@ -1,27 +1,23 @@
-
 const mongoose = require("mongoose");
 
 const connectDB = async () => {
   const isProduction = process.env.NODE_ENV === "production";
 
-  const MONGO_URI = isProduction
-    ? process.env.MONGO_URI_ATLAS
-    : process.env.MONGO_URI_LOCAL;
+  let MONGO_URI;
 
-  console.log("Connecting to:", MONGO_URI);
+  if (isProduction) {
+    MONGO_URI = process.env.MONGO_URI_ATLAS;
+    console.log("Using Atlas Database");
+  } else {
+    MONGO_URI = process.env.MONGO_URI_LOCAL;
+    console.log("Using Local Database");
+  }
 
   try {
-    await mongoose.connect(MONGO_URI, {
-      serverSelectionTimeoutMS: 15000,
-      socketTimeoutMS: 45000,
-      connectTimeoutMS: 15000,
-      retryWrites: true,
-      tls: isProduction, // TLS only for Atlas
-    });
-
-    console.log("MongoDB Connected");
+    await mongoose.connect(MONGO_URI);
+    console.log("MongoDB Connected Successfully");
   } catch (err) {
-    console.error("MongoDB Connection Error:", err);
+    console.error("MongoDB Error:", err.message);
     process.exit(1);
   }
 };

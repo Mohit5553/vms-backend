@@ -1,4 +1,7 @@
-const activeScreens = require("./activeScreens"); // Map file
+
+const activeScreens = require("./activeScreens");
+const Location = require("./models/Location"); // 🔥 ADD THIS
+const Device = require("./models/Device"); // 🔥 ADD THIS
 
 module.exports = (io) => {
   io.on("connection", (socket) => {
@@ -7,28 +10,50 @@ module.exports = (io) => {
     /**
      * 1️⃣ Register device + JOIN LOCATION ROOM
      */
-    socket.on("register_device", ({ deviceId, locationId, locationName }) => {
-      if (!deviceId) {
-        console.log("❌ No deviceId provided!");
-        return;
+
+    socket.on("register_device", async ({ deviceId, locationId }) => {
+      if (!deviceId) return;
+
+      socket.join(`device_${deviceId}`);
+
+      let locationName = "Unknown Location";
+      let companyName = "Unknown Company";
+
+      try {
+        // 🔥 Always fetch device company (best source)
+        const device = await Device.findOne({ deviceId })
+          .populate("company_id", "name");
+
+        if (device?.company_id?.name) {
+          companyName = device.company_id.name;
+        }
+      } catch (err) {
+        console.error("Device fetch error:", err);
       }
 
-      // 🔥 JOIN UNIQUE DEVICE ROOM (MAC based)
-      socket.join(`device_${deviceId}`);
+      // 🔥 Location name (optional)
+      if (locationId) {
+        try {
+          const location = await Location.findById(locationId);
+          if (location) locationName = location.name;
+        } catch (err) {
+          console.error("Location error:", err);
+        }
+      }
+      console.log("Company:", companyName); // ✅ DEBUG
 
       activeScreens.add(
         deviceId,
         locationId,
-        locationName || "Unknown Location",
+        locationName,
         null,
-        socket.id
+        socket.id,
+        companyName
       );
-
-      console.log(`Screen ${deviceId} joined room: device_${deviceId}`);
     });
 
     /**
-     * 2️⃣ Update currently playing video (for Admin preview)
+     * 2️⃣ Update currently playing video (Live Preview)
      */
     socket.on("playing_video", ({ deviceId, videoPath }) => {
       activeScreens.updateVideo(deviceId, videoPath);
