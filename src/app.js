@@ -19,6 +19,10 @@ app.use(express.json());
 
 app.use(
     "/uploads",
+    (req, res, next) => {
+        res.setHeader("Accept-Ranges", "bytes"); // 🔥 enable streaming
+        next();
+    },
     express.static(path.join(process.cwd(), "uploads"))
 );
 
