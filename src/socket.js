@@ -20,7 +20,6 @@ module.exports = (io) => {
       let companyName = "Unknown Company";
 
       try {
-        // 🔥 Always fetch device company (best source)
         const device = await Device.findOne({ deviceId })
           .populate("company_id", "name");
 
@@ -31,7 +30,6 @@ module.exports = (io) => {
         console.error("Device fetch error:", err);
       }
 
-      // 🔥 Location name (optional)
       if (locationId) {
         try {
           const location = await Location.findById(locationId);
@@ -40,7 +38,6 @@ module.exports = (io) => {
           console.error("Location error:", err);
         }
       }
-      console.log("Company:", companyName); // ✅ DEBUG
 
       activeScreens.add(
         deviceId,
@@ -50,13 +47,17 @@ module.exports = (io) => {
         socket.id,
         companyName
       );
+
+      // 🔥 ADD THIS
+      io.emit("live_screens_update", activeScreens.list());
     });
 
     /**
      * 2️⃣ Update currently playing video (Live Preview)
      */
-    socket.on("playing_video", ({ deviceId, videoPath }) => {
-      activeScreens.updateVideo(deviceId, videoPath);
+    socket.on("playing_video", ({ deviceId, videoPath, currentTime }) => {
+      activeScreens.updateVideo(deviceId, videoPath, currentTime);
+      io.emit("live_screens_update", activeScreens.list());
     });
 
     /**
@@ -64,6 +65,9 @@ module.exports = (io) => {
      */
     socket.on("disconnect", () => {
       activeScreens.removeBySocketId(socket.id);
+
+      // 🔥 ADD THIS
+      io.emit("live_screens_update", activeScreens.list());
     });
   });
 };

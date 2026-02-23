@@ -2,13 +2,15 @@ const express = require("express");
 const router = express.Router();
 
 const {
-    createDevice,
-    getAllDevices,
-    getDeviceById,
-    updateDevice,
-    deleteDevice,
-    checkDevice,
-    getDeviceByToken, // 🔥 NEW
+   createDevice,
+   getAllDevices,
+   getDeviceById,
+   updateDevice,
+   deleteDevice,
+   checkDevice,
+   getDeviceByToken, // 🔥 NEW
+   registerDevice, // 🔥 ADD THIS
+
 } = require("../controllers/device.controller");
 
 
@@ -17,7 +19,7 @@ const {
 ======================================================= */
 router.post("/create", createDevice);
 
-
+router.post("/register", registerDevice);
 /* =======================================================
    ✅ CHECK DEVICE BY DEVICE ID
 ======================================================= */

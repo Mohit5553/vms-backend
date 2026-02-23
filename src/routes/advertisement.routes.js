@@ -1,14 +1,14 @@
 const express = require("express");
 
 const {
-  createAdvertisement,
-  viewAdvertisement,
-  updateAdvertisement,
-  deleteAdvertisement,
-  listAdvertisements,
-  playAdvertisements,
-  stopAdvertisements,
-  pauseAdvertisements,
+   createAdvertisement,
+   viewAdvertisement,
+   updateAdvertisement,
+   deleteAdvertisement,
+   listAdvertisements,
+   playAdvertisements,
+   stopAdvertisements,
+   pauseAdvertisements,
 } = require("../controllers/advertisement.controller");
 
 const uploadVideo = require("../middleware/uploadVideo");
@@ -20,9 +20,9 @@ const router = express.Router();
    ✅ CREATE ADVERTISEMENT (VIDEO UPLOAD)
 ======================================================= */
 router.post(
-  "/create",
-  uploadVideo.single("video"),
-  createAdvertisement
+   "/create",
+   uploadVideo.single("video"),
+   createAdvertisement
 );
 
 
@@ -43,9 +43,9 @@ router.get("/details/:id", viewAdvertisement);
    (You can also add upload support here later)
 ======================================================= */
 router.put(
-  "/edit/:id",
-  uploadVideo.single("video"), // 🔥 optional update video
-  updateAdvertisement
+   "/edit/:id",
+   uploadVideo.single("video"), // 🔥 optional update video
+   updateAdvertisement
 );
 
 

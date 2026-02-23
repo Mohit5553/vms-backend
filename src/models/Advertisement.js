@@ -18,7 +18,7 @@ const advertisementSchema = new mongoose.Schema(
       },
     ],
 
-    // 🔥 MAC based device ID
+    /* 🔥 Custom Device ID (NOT MAC) */
     deviceId: [
       {
         type: String,
@@ -32,9 +32,7 @@ const advertisementSchema = new mongoose.Schema(
 
     description: String,
 
-    startDate: Date,
-    endDate: Date,
-
+    /* 🔥 Order in playlist */
     playOrder: {
       type: Number,
       default: 1,

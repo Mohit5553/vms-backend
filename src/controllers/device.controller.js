@@ -1,9 +1,10 @@
 const Device = require("../models/Device");
 
 /* 🔥 TOKEN GENERATOR */
-const generateToken = () =>
-    Math.random().toString(36).substring(2, 10);
+const crypto = require("crypto");
 
+const generateToken = () =>
+    crypto.randomBytes(6).toString("hex");
 
 /* =======================================================
    ✅ CREATE DEVICE (WITH SHORT SCREEN TOKEN)
@@ -182,5 +183,45 @@ exports.checkDevice = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+exports.registerDevice = async (req, res) => {
+    try {
+        const { deviceId, deviceName, company_id, location_id } = req.body;
+
+        if (!deviceId) {
+            return res.status(400).json({ message: "deviceId required" });
+        }
+
+        // Normalize location array
+        const locations = Array.isArray(location_id)
+            ? location_id
+            : location_id
+                ? [location_id]
+                : [];
+
+        let device = await Device.findOne({ deviceId });
+
+        if (!device) {
+            device = await Device.create({
+                deviceId,
+                deviceName,
+                company_id,
+                location_id: locations,
+                screenToken: generateToken(),
+            });
+        } else {
+            // Optional: update name or location
+            device.deviceName = deviceName || device.deviceName;
+            if (locations.length) {
+                device.location_id = locations;
+            }
+            await device.save();
+        }
+
+        res.json({ success: true, device });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 };

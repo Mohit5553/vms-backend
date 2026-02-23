@@ -6,7 +6,6 @@ const activeScreens = require("../activeScreens");
 /* =======================================================
    ✅ CREATE ADVERTISEMENT (MULTI COMPANY + LOCATION)
 ======================================================= */
-
 exports.createAdvertisement = async (req, res) => {
   try {
     if (!req.file) {
@@ -22,30 +21,17 @@ exports.createAdvertisement = async (req, res) => {
       deviceIds,
       title,
       description,
-      startDate,
-      endDate,
       playOrder,
     } = req.body;
 
-    // 🔥 Convert JSON string → Array
     if (typeof company_ids === "string") {
       company_ids = JSON.parse(company_ids);
     }
-
     if (typeof location_ids === "string") {
       location_ids = JSON.parse(location_ids);
     }
-
     if (typeof deviceIds === "string") {
       deviceIds = JSON.parse(deviceIds);
-    }
-
-    // 🔥 Validation
-    if (!company_ids?.length || !location_ids?.length) {
-      return res.status(400).json({
-        success: false,
-        message: "Company and Location are required",
-      });
     }
 
     const publicVideoPath = `/uploads/videos/${req.file.filename}`;
@@ -53,11 +39,9 @@ exports.createAdvertisement = async (req, res) => {
     const advertisement = await Advertisement.create({
       company_ids,
       location_ids,
-      deviceId: deviceIds,
+      deviceId: deviceIds || [],
       title,
       description,
-      startDate,
-      endDate,
       playOrder,
       videoPath: publicVideoPath,
     });
@@ -214,48 +198,38 @@ exports.deleteAdvertisement = async (req, res) => {
 ======================================================= */
 exports.playAdvertisements = async (req, res) => {
   try {
-    const { companyId, deviceId } = req.body;
+    const { companyId, deviceId, locationId } = req.body;
 
-    if (!companyId || !deviceId) {
-      return res.status(400).json({
-        success: false,
-        message: "companyId and deviceId required",
-      });
-    }
-
-    /* 🔥 MULTI COMPANY SUPPORT */
     const ads = await Advertisement.find({
       isActive: true,
       company_ids: companyId,
-      deviceId: deviceId,
+      location_ids: locationId,
+      $or: [
+        { deviceId: { $in: [deviceId] } },
+        { deviceId: { $size: 0 } },
+      ],
     }).sort({ playOrder: 1 });
 
     if (!ads.length) {
-      return res.status(404).json({
-        success: false,
-        message: "No ads found",
-      });
+      return res.status(404).json({ success: false, message: "No ads found" });
     }
 
     const io = socketInstance.getIO();
+
+    // 🔥 Check if paused or not
+    const screen = activeScreens.get(deviceId);
+    const isPaused = screen?.currentVideo === "PAUSED";
 
     io.to(`device_${deviceId}`).emit("play_ads", {
       companyId,
       deviceId,
       ads,
+      resume: isPaused, // ✅ ONLY resume when paused
     });
-
-    if (ads.length) {
-      activeScreens.updateVideo(deviceId, ads[0].videoPath);
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Ads sent",
-      count: ads.length,
-    });
+    console.log("activeScreens:", activeScreens);
+    res.json({ success: true });
   } catch (error) {
-    console.error("Play error:", error);
+    console.error("Play Ads Error:", error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -263,13 +237,11 @@ exports.playAdvertisements = async (req, res) => {
   }
 };
 
-
 /* =======================================================
    ✅ STOP ADS
 ======================================================= */
 exports.stopAdvertisements = async (req, res) => {
-  const { companyId, deviceId } = req.body;
-
+  const { companyId, deviceId, locationId } = req.body;
   if (!deviceId) {
     return res.status(400).json({
       success: false,
@@ -298,8 +270,7 @@ exports.stopAdvertisements = async (req, res) => {
 ======================================================= */
 exports.pauseAdvertisements = async (req, res) => {
   try {
-    const { companyId, deviceId } = req.body;
-
+    const { companyId, deviceId, locationId } = req.body;
     if (!deviceId) {
       return res.status(400).json({
         success: false,
@@ -328,3 +299,4 @@ exports.pauseAdvertisements = async (req, res) => {
     });
   }
 };
+

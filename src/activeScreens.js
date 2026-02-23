@@ -15,16 +15,23 @@ module.exports = {
             locationName,
             currentVideo,
             socketId,
-            companyName, // 🔥 ADD THIS
+            companyName,
             connectedAt: new Date(),
         });
     },
 
+    // ✅ ADD THIS
+    get: (deviceId) => activeScreens.get(deviceId),
 
-    updateVideo: (deviceId, currentVideo) => {
+    updateVideo: (deviceId, currentVideo, currentTime = null) => {
         if (activeScreens.has(deviceId)) {
             const data = activeScreens.get(deviceId);
             data.currentVideo = currentVideo;
+
+            if (currentTime !== null) {
+                data.currentTime = currentTime;
+            }
+
             activeScreens.set(deviceId, data);
         }
     },
@@ -46,7 +53,6 @@ module.exports = {
             }
         }
     },
-
 
     list: () => Array.from(activeScreens.values()),
 };
